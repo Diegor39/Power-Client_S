@@ -215,14 +215,14 @@ print ("Thank you for using this code")
 
 
 import azure.cognitiveservices.speech as speechsdk
-
+import time
 # Creates an instance of a speech config with specified subscription key and service region.
 # Replace with your own subscription key and service region (e.g., "westus").
 speech_key, service_region = "e21c5662cc5c4e7aa983ba12c67f6a90", "eastus"
 speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
 
 # Creates a recognizer with the given settings
-speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config)
+speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config,language="es-MX")
 
 print("Se ha iniciado la grabación de la llamada...")
 
@@ -259,8 +259,10 @@ def authenticate_client():
     return text_analytics_client
 
 client = authenticate_client()
-
-document = result#input("Introduce una frase feliz:" )
+print(result)
+document = result.text
+print(document)
+#input("Introduce una frase feliz:" )
 
 def sentiment_analysis_example(client):
 
@@ -302,4 +304,3 @@ def key_phrase_extraction_example(client):
         print("Encountered exception. {}".format(err))
         
 key_phrase_extraction_example(client)
-

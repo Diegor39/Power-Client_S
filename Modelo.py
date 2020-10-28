@@ -4,7 +4,10 @@ from flaskext.mysql import MySQL
 import urllib.request
 import azure.cognitiveservices.speech as speechsdk
 import time
-
+import azure.cognitiveservices.speech as speechsdk
+import time
+from azure.ai.textanalytics import TextAnalyticsClient
+from azure.core.credentials import AzureKeyCredential
 
 
 app = Flask(__name__)
@@ -89,20 +92,18 @@ def DATOUSER(CORREUSER):
     datuse = cursor.fetchall()
     return datuse
 
-def editart(editicket, ediestado, ediproducto, edidireccion, edirazon):
+def editart(editicket1, ediestado1, ediproducto1, edidireccion1, edirazon1):
     conn = mysql.connect()
     cursor = conn.cursor()
-    cursor.execute('UPDATE S_C_REFUND1 SET PRODUCT_R = %s, REASON_R = %s, ADRRESS = %s WHERE ID_REFUND = %s;', (ediproducto,edirazon,edidireccion,editicket))
-    edir = cursor.fetchall()
-    return edir
+    cursor.execute('UPDATE S_C_REFUND1 SET PRODUCT_R = %s, REASON_R = %s, ADRRESS = %s WHERE ID_REFUND = %s;', (ediproducto1,edirazon1,edidireccion1,editicket1)) 
+    return True
    
 
 def borrarticket(Borrar):
     conn = mysql.connect()
     cursor = conn.cursor()
     cursor.execute('UPDATE S_C_REFUND1 SET STATUS_R = 5 WHERE ID_REFUND =  %s;', Borrar)
-    borrar = cursor.fetchall()
-    return borrar
+    return True
 
 def all_info():
     conn = mysql.connect()
@@ -118,26 +119,12 @@ def tickets_tod(correo):
     return tickets
 
 def llamada():
-    # Creates an instance of a speech config with specified subscription key and service region.
-    # Replace with your own subscription key and service region (e.g., "westus").
+    
     speech_key, service_region = "e21c5662cc5c4e7aa983ba12c67f6a90", "eastus"
     speech_config = speechsdk.SpeechConfig(subscription=speech_key, region=service_region)
-
-    #Creates a recognizer with the given settings
-    speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config)
-
+    speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config,language="es-MX")
     print("Se ha iniciado la grabación de la llamada...")
-
-
-    # Starts speech recognition, and returns after a single utterance is recognized. The end of a
-    # single utterance is determined by listening for silence at the end or until a maximum of 15
-    # seconds of audio is processed.  The task returns the recognition text as result. 
-    # Note: Since recognize_once() returns only a single utterance, it is suitable only for single
-    # shot recognition like command or query. 
-    # For long-running multi-utterance recognition, use start_continuous_recognition() instead.
     result = speech_recognizer.recognize_once()
-
-    # Checks result.
     if result.reason == speechsdk.ResultReason.RecognizedSpeech:
         print("Recognized: {}".format(result.text))
     elif result.reason == speechsdk.ResultReason.NoMatch:
@@ -147,8 +134,50 @@ def llamada():
         print("Speech Recognition canceled: {}".format(cancellation_details.reason))
         if cancellation_details.reason == speechsdk.CancellationReason.Error:
             print("Error details: {}".format(cancellation_details.error_details))
+    
+    #result = 2
+    return result.text
+    #return result
 
-    return result
+
+
+def analisis():
+    document = llamada()
+    ta_credential = AzureKeyCredential("669021d295c9482e96114324804b22c8")
+    text_analytics_client = TextAnalyticsClient(endpoint="https://text-a-powe-client.cognitiveservices.azure.com/", credential=ta_credential)
+    client = text_analytics_client
+    documents = [document]
+    response = client.analyze_sentiment(documents = documents)[0]
+    print("Document Sentiment: {}".format(response.sentiment))
+    print("Overall scores: positive={0:.2f}; neutral={1:.2f}; negative={2:.2f} \n".format(
+        response.confidence_scores.positive,
+        response.confidence_scores.neutral, 
+        response.confidence_scores.negative,
+    ))
+    respuestas = [response.sentiment, response.confidence_scores.positive, response.confidence_scores.neutral, response.confidence_scores.negative, document]
+    
+    #respuestas= 3
+    return respuestas
+
+def anali_llama(mensaje, senti, pos, neutra, nega, clieb, tick):
+    conn = mysql.connect()
+    cursor = conn.cursor()
+    cursor.execute('Insert into S_C_CALL (NAME_C, ID_TICKET_C, CALL_TEXT, SENTIMENT, NUM_PO, NUM_NEU, NUM_NEG) VALUES (%s,%s,%s,%s,%s,%s,%s)', (clieb,tick,mensaje,senti,pos,neutra,nega))
+
+    conn1 = mysql.connect()
+    cursor1 = conn1.cursor()
+    cursor1.execute('UPDATE S_C_REFUND1 SET STATUS_R = 2 WHERE ID_REFUND =  %s;', tick)
+    return True
+
+
+
+
+
+
+
+
+
+
 
 if __name__ == '__main__': 
     app.run(debug=True)

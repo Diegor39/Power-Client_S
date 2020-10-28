@@ -10,6 +10,13 @@
     <link href="https://unpkg.com/ionicons@4.5.10-0/dist/css/ionicons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{url_for('static',filename='style.css')}}"> 
     <title>Hello, world!</title>
+    <style>
+      .zoom:hover {
+        -ms-transform: scale(1.3); /* IE 9 */
+        -webkit-transform: scale(1.3); /* Safari 3-8 */
+        transform: scale(1.1); 
+      }
+      </style>
   </head>
   <body>
       <div class="d-flex">
@@ -27,11 +34,7 @@
                     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                     </button>
-                    <form class="form-inline position-relative my-2 d-inline-block" action="/ticket" method="POST">
-                        <input class="form-control mr-sm-2" type="search" placeholder="Ticket" aria-label="Search" name="SERCHT">
-                        <button class="btn btn-search position-absolute" type="submit"><i class="icon ion-md-search"></i></button>
-                    </form>
-              
+                    
                     <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav ml-auto">
                         <li class="nav-item dropdown">
@@ -40,10 +43,9 @@
                         {{nomre}}
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item" href="#">Mi Perfil</a>
-                            <a class="dropdown-item" href="#">Mis Compras</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="#">Cerrar sesión</a>
+                          <a class="dropdown-item" href="#">Mi Perfil</a>
+                          <div class="dropdown-divider"></div>
+                          <a class="dropdown-item" href="/close">Cerrar sesión</a>
                         </div>
                         </li>
                     </ul>
@@ -56,8 +58,8 @@
                     <div class="container">
                         <div class="row">
                             <div class="col-lg-9">
-                                <h1 class="font-weight-bold mb-0">Devoluciones y Reembolsos</h1>
-                                <p class="lead text-muted">Selecciona los productos para generar la devolucion</p>
+                                <h1 class="font-weight-bold mb-0">Ve todos los Tickets del usuario </h1>
+                                <p class="lead text-muted">Selecciona un ticket par ver los detalles</p>
                             </div>
                         </div>
                     </div>
@@ -116,7 +118,12 @@
                           <tbody>
                             {% for ticket in tickets %}
                             <tr>
-                              <td onmouseover="mostar()" >CLAVT0{{ticket.0 }}</td>
+                              <form action="/edi_tc" method="POST">
+                                <td>
+                                <input  style="display: none;" value="{{ticket.0 }}" name="SERCHT"></input>
+                                <button type="submit" style="background: none; border-radius: 100% ;padding:0px; border:none;" class="zoom" >CLAVT0{{ticket.0 }}</button>
+                                </td>
+                              </form>
                               <td>{{ticket.2 }}</td>
                               <td>{{ticket.3 }}</td>
                               <td><img src="static/{{ticket.5}}.png" class="img-fluid rounded-circle avatar mr-2"></td>
